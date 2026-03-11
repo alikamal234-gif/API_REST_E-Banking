@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Auth;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -19,12 +20,11 @@ class LoginController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required', 'min:8']
         ]);
-
-        if (Auth::attempt($data)) {
-            $token = $request->user()->createToken('api_auth');
+        if ($token = Auth::attempt($data)) {
+          
             return response()->json(
                 [
-                    'data' => $data,
+                    'message' => "login wax successfull",
                     'token' => $token
                 ],
                 201
@@ -38,7 +38,7 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        auth()->logout();
 
         return response()->json([
             'message' => 'Logged out successfully'
