@@ -4,6 +4,8 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\TransferController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -34,4 +36,19 @@ Route::middleware('auth:api')->group(function (){
     Route::patch('/accounts/{id}/convert', [AccountController::class, 'convertToCourant']);
 
     Route::delete('/accounts/{id}', [AccountController::class, 'requestClosure']);
+
+
+
+    // transfeeeeeeeeeeeer
+
+    Route::post('/transfer', [TransferController::class, 'transfer']);
+    Route::get('/transfer/history', [TransferController::class, 'history']);
+    Route::get('/transfer/{id}/show', [TransferController::class, 'show']);
+
+
+    // transactiiiiiiiiiiiiiiiiiion
+
+    Route::get('/transactions', [TransactionController::class, 'index']);
+    Route::get('/transactions/{id}', [TransactionController::class, 'show']);
+    Route::delete('/transactions/{id}', [TransactionController::class, 'destroy']);
 });
