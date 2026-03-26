@@ -3,13 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
-use App\Models\Transaction;
 use App\Models\Transfer;
+use App\Services\TransferService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class TransferController extends Controller
 {
+    protected $transferService;
+
+    public function __construct(TransferService $transferService)
+    {
+        $this->transferService = $transferService;
+    }
+
     public function transfer(Request $request)
     {
         $request->validate([
@@ -18,60 +24,24 @@ class TransferController extends Controller
             'amount' => 'required|numeric|min:1',
         ]);
 
-        $userId = auth()->id();
+        try {
+            $transfer = $this->transferService->transfer(
+                Account::findOrFail($request->source_id),
+                Account::findOrFail($request->destination_id),
+                $request->amount,
+                auth()->id()
+            );
 
-        $source = Account::findOrFail($request->source_id);
-        $destination = Account::findOrFail($request->destination_id);
-
-        if (!$source->users()->where('user_id', $userId)->exists()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        if ($source->status !== 'active' || $destination->status !== 'active') {
-            return response()->json(['error' => 'Account not active'], 400);
-        }
-
-        if (($source->balance + $source->overdraft_limit) < $request->amount) {
-            return response()->json(['error' => 'Insufficient funds'], 400);
-        }
-
-        $transfer = DB::transaction(function () use ($source, $destination, $request, $userId) {
-
-            $source->balance -= $request->amount;
-            $source->save();
-
-            $destination->balance += $request->amount;
-            $destination->save();
-
-            $transfer = Transfer::create([
-                'source_account_id' => $source->id,
-                'destination_account_id' => $destination->id,
-                'creator_id' => $userId,
-                'amount' => $request->amount,
-                'status' => 'completed',
+            return response()->json([
+                'status' => 'success',
+                'transfer' => $transfer,
             ]);
 
-            Transaction::create([
-                'account_id' => $source->id,
-                'creator_id' => $userId,
-                'type' => 'WITHDRAWAL',
-                'amount' => $request->amount,
-            ]);
-
-            Transaction::create([
-                'account_id' => $destination->id,
-                'creator_id' => $userId,
-                'type' => 'DEPOSIT',
-                'amount' => $request->amount,
-            ]);
-
-            return $transfer;
-        });
-
-        return response()->json([
-            'status' => 'success',
-            'transfer' => $transfer,
-        ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 400);
+        }
     }
 
     public function history()

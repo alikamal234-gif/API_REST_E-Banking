@@ -3,25 +3,21 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransferController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::apiResource('register', RegisterController::class)->only(['store']);
+Route::apiResource('login', LoginController::class)->only(['store']);
 
-
-Route::apiResource('register',RegisterController::class)->only(['store']);
-Route::apiResource('login',LoginController::class)->only(['store']);
-
-Route::middleware('auth:api')->group(function (){
-    Route::post('/logout',[LoginController::class,'logout'])->name('logout');
-    Route::patch('/changepassword',[ProfileController::class,'changePassword']);
-    Route::put('/updateprofile',[ProfileController::class,'updateProfile']);
-    Route::get('/profile',[ProfileController::class,'me']);
-    Route::delete('/deletecomte',[ProfileController::class,'deleteCompte']);
-
-
+Route::middleware('auth:api')->group(function () {
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::patch('/changepassword', [ProfileController::class, 'changePassword']);
+    Route::put('/updateprofile', [ProfileController::class, 'updateProfile']);
+    Route::get('/profile', [ProfileController::class, 'me']);
+    Route::delete('/deletecomte', [ProfileController::class, 'deleteCompte']);
 
     // acouuuuuuuuunt
     Route::get('/accounts', [AccountController::class, 'index']);
@@ -37,18 +33,22 @@ Route::middleware('auth:api')->group(function (){
 
     Route::delete('/accounts/{id}', [AccountController::class, 'requestClosure']);
 
-
-
     // transfeeeeeeeeeeeer
 
     Route::post('/transfer', [TransferController::class, 'transfer']);
     Route::get('/transfer/history', [TransferController::class, 'history']);
     Route::get('/transfer/{id}/show', [TransferController::class, 'show']);
 
-
     // transactiiiiiiiiiiiiiiiiiion
 
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::get('/transactions/{id}', [TransactionController::class, 'show']);
     Route::delete('/transactions/{id}', [TransactionController::class, 'destroy']);
+
+    // contaaaaaaaaaaaaaaaaact
+
+    Route::get('/contacts', [ContactController::class, 'index']);
+    Route::post('/contacts', [ContactController::class, 'store']);
+    Route::get('/contacts/{id}', [ContactController::class, 'show']);
+    Route::delete('/contacts/{id}', [ContactController::class, 'destroy']);
 });
