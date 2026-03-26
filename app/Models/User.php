@@ -60,4 +60,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Transfer::class, 'creator_id');
     }
+
+    public function isAdmin()
+{
+    return $this->is_admin;
+}
 }

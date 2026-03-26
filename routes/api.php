@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ContactController;
@@ -51,4 +52,12 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/contacts', [ContactController::class, 'store']);
     Route::get('/contacts/{id}', [ContactController::class, 'show']);
     Route::delete('/contacts/{id}', [ContactController::class, 'destroy']);
+});
+
+
+Route::prefix('admin')->middleware(['auth:api', 'is_admin'])->group(function () {
+
+        Route::patch('/accounts/{id}/block', [AdminController::class, 'block']);
+        Route::patch('/accounts/{id}/unblock', [AdminController::class, 'unblock']);
+        Route::patch('/accounts/{id}/close', [AdminController::class, 'close']);
 });
